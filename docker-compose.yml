@@ -1,0 +1,70 @@
+   
+version: '3'
+
+services:
+# FOR POSTGRE DATABASE
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env
+    ports:
+      - 5432:5432
+    networks:
+      - app-network
+# FOR ORDERS
+  orders:
+    build:
+      context: ./order
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    env_file:
+      - .env
+# FOR ORDERS
+  products:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    env_file:
+      - .env
+# FOR users
+  users:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    env_file:
+      - .env
+  # FOR nginx
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - orders
+      - products
+      - users
+    networks:
+      - app-network
+  # FOR NETWORK
+networks:
+  app-network:
+    driver: bridge      
+
